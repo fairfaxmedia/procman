@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["michael.lorant@fairfaxmedia.com.au"]
 
   spec.summary       = %q{Procman installs and configures Foreman procfile using an RVM aware template.}
-  spec.description   = %q{Procman installs and configures the Foreman Procfile. It also add support for RVM in the Upstart config files.}
+  spec.description   = %q{Procman installs and configures the Foreman Procfile. It also adds support for RVM in the Upstart config files.}
   spec.homepage      = "http://bitbucket.org/fairfax"
   spec.license       = "MIT"
 
