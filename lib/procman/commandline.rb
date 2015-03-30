@@ -1,5 +1,4 @@
 require 'mixlib/cli'
-require 'pry'
 
 module Procman
   # Procman::Commandline
@@ -22,11 +21,6 @@ module Procman
            long:        '--file PROCFILE',
            description: 'Specify an alternate Procfile to load.'
 
-    option :root,
-           short:       '-r ROOT',
-           long:        '--root ROOT',
-           description: 'Specify an alternate application root.'
-
     option :app,
            short:       '-a APP',
            long:        '--app APP',
@@ -37,6 +31,11 @@ module Procman
            long:        '--user USER',
            description: 'Specify the user the application should be run as.',
            default:     'www-data'
+
+    option :root,
+           short:       '-r ROOT',
+           long:        '--root ROOT',
+           description: 'Specify an alternate application root.'
 
     option :port,
            short:       '-p PORT',
@@ -85,9 +84,10 @@ module Procman
     end
 
     def export(config)
-      (File.file? config[:procfile]) ? true :  fail(ArgumentError, 'Invalid procfile.')
+      procfile = File.file? config[:procfile]
+      procfile ? true :  fail(ArgumentError, 'Invalid procfile.')
     rescue TypeError
-      fail(ArgumentError, 'Missing profile argument.')
+      raise(ArgumentError, 'Missing profile argument.')
     end
   end
 end

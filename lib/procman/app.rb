@@ -1,7 +1,7 @@
 module Procman
   # Procman::App
   class App
-    SHELL   = 'sudo /bin/bash --login -c'
+    SHELL   = '/bin/bash --login -c'
     PROGRAM = 'foreman'
     ACTION  = 'export'
 
@@ -17,13 +17,13 @@ module Procman
       options = [PROGRAM, ACTION]
       options << management
       options << (option :procfile)
-      options << (option :template)
-      options << (option :root) if @config[:root]
       options << (option :app) if @config[:app]
       options << (option :user)
+      options << (option :root) if @config[:root]
       options << (option :port) if @config[:port]
+      options << (option :template)
 
-      puts command options
+      execute(command options)
     end
 
     private
@@ -31,7 +31,7 @@ module Procman
     def management
       case @config[:template]
       when 'upstart_rvm'
-        'upstart_rvm /etc/init'
+        'upstart /etc/init'
       else
         fail InvalidTemplate
       end
@@ -40,10 +40,8 @@ module Procman
     def option(option)
       case option
       when :template
-        format('--%s %s/templates/%s',
-          option.to_s,
-          File.expand_path(File.dirname(__FILE__)),
-          @config[option])
+        path = File.expand_path(File.dirname(__FILE__) + '../../..')
+        format('--%s %s/templates/%s', option.to_s, path, @config[option])
       else
         format('--%s %s', option.to_s, @config[option])
       end
@@ -51,6 +49,10 @@ module Procman
 
     def command(options)
       format('%s "%s"', SHELL, options.join(' '))
+    end
+
+    def execute(command)
+      `#{command}`
     end
   end
 end
