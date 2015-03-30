@@ -5,6 +5,10 @@ module Procman
   class Commandline
     include Mixlib::CLI
 
+    MISSING_ARGUMENTS = 'Missing required arguments.'
+    MISSING_PROCFILE =  'Missing profile argument.'
+    INVALID_PROCFILE =  'Invalid procfile.'
+
     # rubocop:disable Metrics/LineLength
 
     option :procfile,
@@ -64,7 +68,9 @@ module Procman
         puts 'Missing action.'
         puts cli.banner
       end
-    rescue ArgumentError, OptionParser::MissingArgument, OptionParser::InvalidOption => e
+    rescue ArgumentError,
+           OptionParser::MissingArgument,
+           OptionParser::InvalidOption => e
       puts e.message
     end
 
@@ -73,14 +79,14 @@ module Procman
     end
 
     def validate(action, config)
-      send(action, config) ? true : fail(ArgumentError, 'Missing required arguments.')
+      send(action, config) ? true : fail(ArgumentError, MISSING_ARGUMENTS)
     end
 
     def export(config)
       procfile = File.file? config[:procfile]
-      procfile ? true :  fail(ArgumentError, 'Invalid procfile.')
+      procfile ? true :  fail(ArgumentError, INVALID_PROCFILE)
     rescue TypeError
-      raise(ArgumentError, 'Missing profile argument.')
+      raise(ArgumentError, MISSING_PROCFILE)
     end
   end
 end
