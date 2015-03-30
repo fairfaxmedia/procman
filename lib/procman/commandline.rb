@@ -5,9 +5,10 @@ module Procman
   class Commandline
     include Mixlib::CLI
 
+    MISSING_ACTION    = 'Missing or invalid action.'
     MISSING_ARGUMENTS = 'Missing required arguments.'
-    MISSING_PROCFILE =  'Missing profile argument.'
-    INVALID_PROCFILE =  'Invalid procfile.'
+    MISSING_PROCFILE  = 'Missing procfile argument.'
+    INVALID_PROCFILE  = 'Invalid procfile.'
 
     # rubocop:disable Metrics/LineLength
 
@@ -52,10 +53,10 @@ module Procman
     private
 
     def parse
-      cli = Procman::Commandline.new
-      cli.parse_options
-
+      cli     = Procman::Commandline.new
       procman = Procman::App.new(cli.config)
+
+      cli.parse_options
 
       case (action = action cli.cli_arguments)
       when 'help'
@@ -65,13 +66,13 @@ module Procman
       when 'export'
         procman.export if validate(action, cli.config)
       else
-        puts 'Missing action.'
-        puts cli.banner
+        fail(ArgumentError, MISSING_ACTION)
       end
     rescue ArgumentError,
            OptionParser::MissingArgument,
            OptionParser::InvalidOption => e
-      puts e.message
+      puts procman.help(cli)
+      puts "ERROR: #{e.message}"
     end
 
     def action(array)
