@@ -9,6 +9,18 @@ module Procman
       @config = config
     end
 
+    def help(cli)
+      puts 'Usage: procman [action] [options]'
+      puts
+      puts 'Actions:'
+      puts '    help                             Show this message.'
+      puts '    version                          Show version.'
+      puts '    export                           Export the Procfile.'
+      puts
+      puts 'Options:'
+      puts cli.opt_parser.to_a[1..-1].join
+    end
+
     def version
       puts Procman::VERSION
     end

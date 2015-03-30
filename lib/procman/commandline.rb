@@ -7,15 +7,6 @@ module Procman
 
     # rubocop:disable Metrics/LineLength
 
-    option :help,
-           short:        '-h',
-           long:         '--help',
-           description:  'Show this message',
-           on:           :tail,
-           boolean:      true,
-           show_options: true,
-           exit:         0
-
     option :procfile,
            short:       '-f PROCFILE',
            long:        '--file PROCFILE',
@@ -24,28 +15,28 @@ module Procman
     option :app,
            short:       '-a APP',
            long:        '--app APP',
-           description: 'Name of the application.'
+           description: 'Name of the application. (default: directory name)'
 
     option :user,
            short:       '-u USER',
            long:        '--user USER',
-           description: 'Specify the user the application should be run as.',
+           description: 'Specify the user the application should be run as. (default: www-data)',
            default:     'www-data'
 
     option :root,
            short:       '-r ROOT',
            long:        '--root ROOT',
-           description: 'Specify an alternate application root.'
+           description: 'Specify an alternate application root. (default: Procfile directory)'
 
     option :port,
            short:       '-p PORT',
            long:        '--port PORT',
-           description: 'Port to use as the base for this application.'
+           description: 'Port to use as the base for this application. (default: 5000)'
 
     option :template,
            short:       '-t TEMPLATE',
            long:        '--template TEMPLATES',
-           description: 'Specify an alternate template to use for creating export files.',
+           description: 'Specify an alternate template to use for creating export files. (default: upstart_rvm)',
            default:     'upstart_rvm'
 
     # rubocop:enable Metrics/LineLength
@@ -63,6 +54,8 @@ module Procman
       procman = Procman::App.new(cli.config)
 
       case (action = action cli.cli_arguments)
+      when 'help'
+        procman.help(cli)
       when 'version'
         procman.version
       when 'export'
@@ -76,7 +69,7 @@ module Procman
     end
 
     def action(array)
-      array.select { |i| %w(version export).include? i }.first
+      array.select { |i| %w(help version export).include? i }.first
     end
 
     def validate(action, config)

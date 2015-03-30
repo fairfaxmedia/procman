@@ -1,8 +1,6 @@
 # Procman
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/procman`. To experiment with that code, run `bin/console` for an interactive prompt.
-
-TODO: Delete this and the text above, and describe your gem
+Procman installs and configures the Foreman Procfile. It also add support for RVM in the Upstart config files.
 
 ## Installation
 
@@ -22,7 +20,39 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+To use Procman you need to have an application with a Procfile in the applications root directory. Some valid Procfile examples.
+
+    unicorn:   bundle exec unicorn --listen /tmp/unicorn-app.sock
+    puma:      bundle exec puma --port 8080
+    passenger: bundle exec passenger start --port 8080
+    rake:      bundle exec rake task
+
+The commandline structure.
+
+    Usage: procman [action] [options]
+
+    Actions:
+        help                             Show this message.
+        version                          Show version.
+        export                           Export the Procfile.
+
+    Options:
+        -a, --app APP                    Name of the application. (default: directory name)
+        -p, --port PORT                  Port to use as the base for this application. (default: 5000)
+        -f, --file PROCFILE              Specify an alternate Procfile to load.
+        -r, --root ROOT                  Specify an alternate application root. (default: Procfile directory)
+        -t, --template TEMPLATES         Specify an alternate template to use for creating export files. (default: upstart_rvm)
+        -u, --user USER                  Specify the user the application should be run as. (default: www-data)
+
+Example usage.
+
+    sudo -i procman export --file /var/www/example/Procfile --app example --user www-data
+
+On some systems you may need to start the service.
+
+    sudo start example
+
+It is important to note that Procman writes files to /etc/init which requires root access. An interactive shell is required so the RVM environment is available.
 
 ## Development
 
