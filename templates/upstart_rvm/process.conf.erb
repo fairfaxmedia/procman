@@ -4,7 +4,7 @@ respawn
 
 env PORT=<%= port %>
 <% File.readlines('/etc/environment').delete_if { |line| line.start_with? 'PATH=' }.each do |line| -%>
-env <%= line %>
+env <%= line -%>
 <% end -%>
 <% engine.env.each do |name,value| -%>
 env <%= name.upcase %>='<%= value.gsub(/'/, "'\"'\"'") %>'
