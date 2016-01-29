@@ -101,9 +101,9 @@ module Procman
   # Some types of commands can't be monitored, as they spawn the "real" command (e.g. `bundle exec`)
   # We need to clean these out of our command list:
   def export_monitoring_subst(procs, subst)
-    return procs unless subst
     procs.each.with_object({}) do |(name, command), obj|
-      obj.merge!(name => command.gsub(subst, ''))
+      # TODO: Does Facter let me use `-` in a name?
+      obj.merge!("procman-#{name}" => command.gsub(subst, ''))
     end
   end
 end
