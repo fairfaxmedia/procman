@@ -1,3 +1,5 @@
+require 'yaml'
+
 module Procman
   # Procman::App
   class App
@@ -10,9 +12,17 @@ module Procman
     ACTION  = 'export'
 
     def initialize(config)
+      log.debug "Procman options = #{config.inspect}"
+
       @config = config
-      log.debug "Procman options = #{@config.inspect}"
-     end
+      @target_dir = @monitoring_file = @monitoring_subst = nil
+
+      @config.delete(:target_dir).tap {|v| @target_dir = v if v && !v.empty? }
+      @config.delete(:monitoring_file).tap {|v| @monitoring_file = v if v && !v.empty? }
+      @config.delete(:monitoring_subst).tap {|v| @monitoring_subst = Regexp.new(v) if v && !v.empty? }
+
+      fail(ArgumentError, "No $TARGET_DIR provided") unless @target_dir
+    end
 
     def help(cli)
       puts 'Usage: procman [action] [options]'
@@ -43,6 +53,8 @@ module Procman
       log.debug "Foreman options = #{options.inspect}"
 
       execute(command options)
+
+      export_monitoring
     end
 
     private
@@ -50,7 +62,7 @@ module Procman
     def management
       case @config[:template]
       when 'upstart_rvm'
-        'upstart /etc/init'
+        "upstart #{@target_dir}"
       else
         fail InvalidTemplate
       end
@@ -73,6 +85,25 @@ module Procman
     def execute(command)
       log.debug "Running #{command.inspect}"
       system(command)
+    end
+
+    # Build a YAML file suitable for updating Icinga monitoring from
+    # E.g. Facter facts --> Icinga monitors
+    def export_monitoring
+      procfile = @config[:procfile]
+      return unless @monitoring_file && procfile
+
+      procs = export_monitoring_subst(YAML.load_file(procfile), @monitoring_subst)
+      open(@monitoring_file, 'w') {|f| YAML.dump(procs, f) }
+    end
+  end
+
+  # Some types of commands can't be monitored, as they spawn the "real" command (e.g. `bundle exec`)
+  # We need to clean these out of our command list:
+  def export_monitoring_subst(procs, subst)
+    return procs unless subst
+    procs.each.with_object({}) do |(name, command), obj|
+      obj.merge!(name => command.gsub(subst, ''))
     end
   end
 end

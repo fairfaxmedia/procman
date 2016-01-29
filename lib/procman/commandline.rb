@@ -50,6 +50,25 @@ module Procman
            description: 'Specify an alternate template to use for creating export files. (default: upstart_rvm)',
            default:     'upstart_rvm'
 
+    option :target_dir,
+           short:       '-d TARGET_DIR',
+           long:        '--dir TARGET_DIR',
+           description: '',
+           default:     '/etc/init'
+
+    option :monitoring_file,
+           short:       '-m MONITORING_FILE',
+           long:        '--monitorout MONITORING_FILE',
+           description: 'Change the file for exporting to a Monitoring YAML (Structure Fact) file.  (default: /etc/facter/facts.d/procman)',
+           default:     ''
+           # default:     '/etc/facter/facts.d/procman'   #TODO: Is this more-appropriate?
+
+    option :monitoring_subst,
+           short:       '-S MONITORING_COMMAND_SUBST',
+           long:        '--monitoring_subst MONITORING_COMMAND_SUBST',
+           description: 'A regexp for removing parts of each command-line for the Monitoring YAML file.  (default: bundle exec)',
+           default:     'bundle exec'
+
     # rubocop:enable Metrics/LineLength
 
     def run
