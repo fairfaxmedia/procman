@@ -53,7 +53,7 @@ module Procman
     option :target_dir,
            short:       '-d TARGET_DIR',
            long:        '--dir TARGET_DIR',
-           description: '',
+           description: 'Target dir for creating upstart scripts. (default: /etc/init)',
            default:     '/etc/init'
 
     option :monitoring_file,
