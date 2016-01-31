@@ -96,14 +96,14 @@ module Procman
       procs = export_monitoring_subst(YAML.load_file(procfile), @monitoring_subst)
       open(@monitoring_file, 'w') {|f| YAML.dump(procs, f) }
     end
-  end
 
-  # Some types of commands can't be monitored, as they spawn the "real" command (e.g. `bundle exec`)
-  # We need to clean these out of our command list:
-  def export_monitoring_subst(procs, subst)
-    procs.each.with_object({}) do |(name, command), obj|
-      # TODO: Does Facter let me use `-` in a name?
-      obj.merge!("procman-#{name}" => command.gsub(subst, ''))
+    # Some types of commands can't be monitored, as they spawn the "real" command (e.g. `bundle exec`)
+    # We need to clean these out of our command list:
+    def export_monitoring_subst(procs, subst)
+      procs.each.with_object({}) do |(name, command), obj|
+        # TODO: Does Facter let me use `-` in a name?
+        obj.merge!("procman-#{name}" => command.gsub(subst, ''))
+      end
     end
   end
 end
