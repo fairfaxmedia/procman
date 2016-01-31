@@ -66,14 +66,16 @@ It is important to note that Procman writes files to /etc/init which requires ro
 
 It's quite likely that you'll want to add monitoring/alerts for the processes that Foreman creates.
 To this end, if a `MONITORING_FILE` is provided, a YAML file will be written to that location with a
-list of processes that Foreman will start, e.g `files/Procfile`:
+list of processes that Foreman will start.
+
+e.g adding `--monitoring_out /etc/facter/facts.d/procman` with the file `files/Procfile`:
 
     ---
     delayed-job: bundle exec rake jobs:work
     event-forwarder: /usr/local/bin/beanstalkd -b /var/cache/beanstalkd -u www-data
     dir-watcher: ruby /usr/local/bin/dir-watcher
 
-... will produce in `/etc/facter/facts.d/procman` (by default):
+... will produce in `/etc/facter/facts.d/procman`:
 
     ---
     procman-monitors:
@@ -86,8 +88,9 @@ monitoring.
 
 Since that may not be appropriate -- e.g. `bundle exec` replaces the bundle process with a Ruby/rake
 one, so you won't find `bundle` nor `exec` in the process tree -- then you can also provide a monitoring
-file that will be used to provide "substituted" processes for any matching keys, e.g. adding
-`--monitoring_file files/Procfile.mon` with the following contents:
+file that will be used to provide "substituted" processes for any matching keys.
+
+e.g. also adding `--monitoring_file files/Procfile.mon` with the following contents:
 
     ---
     delayed-job: rails rake jobs:work
@@ -101,7 +104,7 @@ file that will be used to provide "substituted" processes for any matching keys,
     - beanstalkd
     - ruby /usr/local/bin/dir-watcher
 
-... which can be read by Puppet modules (et al) to produce valid process-monitoring config's.
+... which can be read by Puppet's Facter (et al) to produce valid process-monitoring config's.
 
 ## Development
 

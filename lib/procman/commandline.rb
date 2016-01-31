@@ -63,7 +63,7 @@ module Procman
 
     option :monitoring_facter_file,
            long:        '--monitoring_out MONITORING_FILE',
-           description: 'Change the file for exporting to a Monitoring YAML (Structure Fact) file.  (default: /etc/facter/facts.d/procman)'
+           description: 'Change the file for exporting to a Monitoring YAML (Structure Fact) file.'
            # default:     '/etc/facter/facts.d/procman'   #TODO: Is this more-appropriate?
 
     # rubocop:enable Metrics/LineLength
