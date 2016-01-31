@@ -12,6 +12,11 @@ module Procman
 
     # rubocop:disable Metrics/LineLength
 
+    option :debug,
+           long:        '--debug',
+           description: 'Debug logging (default: false)',
+           default: false
+
     option :procfile,
            short:       '-f PROCFILE',
            long:        '--file PROCFILE',
@@ -55,6 +60,9 @@ module Procman
     def parse
       cli     = Procman::Commandline.new
       cli.parse_options
+      cli.config.delete(:debug).tap do |v|
+        ::Logging.logger.root.level = :debug if v
+      end
 
       procman = Procman::App.new(cli.config)
 
