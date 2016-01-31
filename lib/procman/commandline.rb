@@ -54,9 +54,9 @@ module Procman
 
     def parse
       cli     = Procman::Commandline.new
-      procman = Procman::App.new(cli.config)
-
       cli.parse_options
+
+      procman = Procman::App.new(cli.config)
 
       case (action = action cli.cli_arguments)
       when 'help'
