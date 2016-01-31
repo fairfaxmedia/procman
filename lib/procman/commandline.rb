@@ -79,7 +79,8 @@ module Procman
       else
         fail(ArgumentError, MISSING_ACTION)
       end
-    rescue ArgumentError,
+    rescue Procman::App::InvalidTemplate,
+           ArgumentError,
            OptionParser::MissingArgument,
            OptionParser::InvalidOption => e
       puts procman.help(cli) if procman
