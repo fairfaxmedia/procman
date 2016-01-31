@@ -92,17 +92,13 @@ module Procman
     def export_monitoring
       return unless @monitoring_facter_file
 
-      output = export_monitoring_procs
-
-      log.debug "Writing monitoring facter file to #{@monitoring_facter_file.inspect}"
-      open(@monitoring_facter_file, 'w') {|f| YAML.dump(output, f) }
-    end
-
-    def export_monitoring_procs
       procs = YAML.load_file(@config[:procfile])
       monitoring = read_procfile_monitoring
 
-      export_monitoring_subst(procs, monitoring)
+      output = { "procman-monitors" => export_monitoring_procs(procs, monitoring) }
+
+      log.debug "Writing monitoring facter file to #{@monitoring_facter_file.inspect}"
+      open(@monitoring_facter_file, 'w') {|f| YAML.dump(output, f) }
     end
 
     def read_procfile_monitoring
@@ -113,13 +109,11 @@ module Procman
       YAML.load_file(@procfile_monitoring)
     end
 
-    # Some types of commands can't be monitored, as they spawn the "real" command (e.g. `bundle exec`)
-    # We need to clean these out of our command list:
-    def export_monitoring_subst(procs, monitoring_replacements)
+    def export_monitoring_procs(procs, monitoring_replacements)
       log.debug "Calculating monitoring facter file"
 
-      procs.each.with_object({}) do |(name, command), obj|
-        obj.merge!("procman-#{name}" => monitoring_replacements[name]) if monitoring_replacements[name]
+      procs.each.with_object([]) do |(name, command), obj|
+        obj << (monitoring_replacements[name] || command)
       end
     end
   end
