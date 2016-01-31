@@ -15,9 +15,10 @@ module Procman
       log.debug "Procman options = #{config.inspect}"
 
       @config = config
-      @target_dir = @monitoring_facter_file = @monitoring_subst = nil
+      @target_dir = @procfile_monitoring = @monitoring_facter_file = @monitoring_subst = nil
 
       @config.delete(:target_dir).tap {|v| @target_dir = v if v && !v.empty? }
+      @config.delete(:procfile_monitoring).tap {|v| @procfile_monitoring = v if v && !v.empty? }
       @config.delete(:monitoring_facter_file).tap {|v| @monitoring_facter_file = v if v && !v.empty? }
       @config.delete(:monitoring_subst).tap {|v| @monitoring_subst = Regexp.new(v) if v && !v.empty? }
 
@@ -91,33 +92,40 @@ module Procman
     # E.g. Facter facts --> Icinga monitors
     def export_monitoring
       return unless @monitoring_facter_file
-      export_monitoring_out(export_monitoring_procs)
-    end
 
-    def export_monitoring_out(output)
+      output = export_monitoring_procs
+
       log.debug "Writing monitoring facter file to #{@monitoring_facter_file.inspect}"
       open(@monitoring_facter_file, 'w') {|f| YAML.dump(output, f) }
     end
 
     def export_monitoring_procs
-      if @procfile_monitoring
-        # We do this, in order to pre-validate the YAML-ness
-        log.debug "Reading provided monitoring facter file from #{@procfile_monitoring}"
-        YAML.load_file(@procfile_monitoring)
+      procs = YAML.load_file(@config[:procfile])
+      monitoring = read_procfile_monitoring
 
-      else
-        log.debug "Calculating monitoring facter file from Procfile"
-        export_monitoring_subst(
-          YAML.load_file(@config[:procfile]), @monitoring_subst)
-      end
+      export_monitoring_subst(procs, monitoring, @monitoring_subst)
+    end
+
+    def read_procfile_monitoring
+      return {} unless @procfile_monitoring
+
+      log.debug "Reading provided monitoring facter file from #{@procfile_monitoring}"
+      # We do this, in order to pre-validate the YAML-ness
+      YAML.load_file(@procfile_monitoring)
     end
 
     # Some types of commands can't be monitored, as they spawn the "real" command (e.g. `bundle exec`)
     # We need to clean these out of our command list:
-    def export_monitoring_subst(procs, subst)
+    def export_monitoring_subst(procs, monitoring_replacements, monitoring_subst)
+      log.debug "Calculating monitoring facter file"
+
       procs.each.with_object({}) do |(name, command), obj|
-        # TODO: Does Facter let me use `-` in a name?
-        obj.merge!("procman-#{name}" => command.gsub(subst, ''))
+        monitoring_item = {
+          # TODO: Does Facter let me use `-` in a name?
+          "procman-#{name}" => (monitoring_replacements[name] ||
+                                command.gsub(monitoring_subst, ''))
+        }
+        obj.merge!(monitoring_item)
       end
     end
   end
