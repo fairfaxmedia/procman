@@ -3,6 +3,7 @@ require 'mixlib/cli'
 module Procman
   # Procman::Commandline
   class Commandline
+    include Procman::Logger
     include Mixlib::CLI
 
     MISSING_ACTION    = 'Missing or invalid action.'
@@ -11,6 +12,11 @@ module Procman
     INVALID_PROCFILE  = 'Invalid procfile.'
 
     # rubocop:disable Metrics/LineLength
+
+    option :debug,
+           long:        '--debug',
+           description: 'Debug logging (default: false)',
+           default: false
 
     option :procfile,
            short:       '-f PROCFILE',
@@ -54,11 +60,16 @@ module Procman
 
     def parse
       cli     = Procman::Commandline.new
-      procman = Procman::App.new(cli.config)
-
       cli.parse_options
+      cli.config.delete(:debug).tap do |v|
+        ::Logging.logger.root.level = :debug if v
+      end
 
-      case (action = action cli.cli_arguments)
+      procman = Procman::App.new(cli.config)
+      action = action cli.cli_arguments
+
+      log.debug "Action = #{action.inspect}"
+      case action
       when 'help'
         procman.help(cli)
       when 'version'
