@@ -3,6 +3,7 @@ require 'mixlib/cli'
 module Procman
   # Procman::Commandline
   class Commandline
+    include Procman::Logger
     include Mixlib::CLI
 
     MISSING_ACTION    = 'Missing or invalid action.'
@@ -65,8 +66,10 @@ module Procman
       end
 
       procman = Procman::App.new(cli.config)
+      action = action cli.cli_arguments
 
-      case (action = action cli.cli_arguments)
+      log.debug "Action = #{action.inspect}"
+      case action
       when 'help'
         procman.help(cli)
       when 'version'

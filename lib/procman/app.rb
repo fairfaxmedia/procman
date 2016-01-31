@@ -9,7 +9,8 @@ module Procman
 
     def initialize(config)
       @config = config
-    end
+      log.debug "Procman options = #{@config.inspect}"
+     end
 
     def help(cli)
       puts 'Usage: procman [action] [options]'
@@ -36,6 +37,8 @@ module Procman
       options << (option :root) if @config[:root]
       options << (option :port) if @config[:port]
       options << (option :template)
+
+      log.debug "Foreman options = #{options.inspect}"
 
       execute(command options)
     end
