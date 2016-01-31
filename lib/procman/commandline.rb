@@ -23,6 +23,11 @@ module Procman
            long:        '--file PROCFILE',
            description: 'Specify an alternate Procfile to load.'
 
+    option :procfile_monitoring,
+           short:       '-m PROCFILE_MONITORING',
+           long:        '--monitoring_file PROCFILE_MONITORING',
+           description: 'Specify an alternate Procfile monitoring config to load.'
+
     option :app,
            short:       '-a APP',
            long:        '--app APP',

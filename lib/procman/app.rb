@@ -90,11 +90,26 @@ module Procman
     # Build a YAML file suitable for updating Icinga monitoring from
     # E.g. Facter facts --> Icinga monitors
     def export_monitoring
-      procfile = @config[:procfile]
-      return unless @monitoring_file && procfile
+      return unless @monitoring_facter_file
+      export_monitoring_out(export_monitoring_procs)
+    end
 
-      procs = export_monitoring_subst(YAML.load_file(procfile), @monitoring_subst)
-      open(@monitoring_file, 'w') {|f| YAML.dump(procs, f) }
+    def export_monitoring_out(output)
+      log.debug "Writing monitoring facter file to #{@monitoring_facter_file.inspect}"
+      open(@monitoring_facter_file, 'w') {|f| YAML.dump(output, f) }
+    end
+
+    def export_monitoring_procs
+      if @procfile_monitoring
+        # We do this, in order to pre-validate the YAML-ness
+        log.debug "Reading provided monitoring facter file from #{@procfile_monitoring}"
+        YAML.load_file(@procfile_monitoring)
+
+      else
+        log.debug "Calculating monitoring facter file from Procfile"
+        export_monitoring_subst(
+          YAML.load_file(@config[:procfile]), @monitoring_subst)
+      end
     end
 
     # Some types of commands can't be monitored, as they spawn the "real" command (e.g. `bundle exec`)
