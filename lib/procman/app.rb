@@ -1,6 +1,8 @@
 module Procman
   # Procman::App
   class App
+    class InvalidTemplate < StandardError; end
+
     include Procman::Logger
 
     SHELL   = '/bin/bash --login -c'
