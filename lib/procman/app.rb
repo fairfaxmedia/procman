@@ -70,7 +70,7 @@ module Procman
 
     def execute(command)
       log.debug "Running #{command.inspect}"
-      `#{command}`
+      system(command)
     end
   end
 end
