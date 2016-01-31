@@ -15,10 +15,10 @@ module Procman
       log.debug "Procman options = #{config.inspect}"
 
       @config = config
-      @target_dir = @monitoring_file = @monitoring_subst = nil
+      @target_dir = @monitoring_facter_file = @monitoring_subst = nil
 
       @config.delete(:target_dir).tap {|v| @target_dir = v if v && !v.empty? }
-      @config.delete(:monitoring_file).tap {|v| @monitoring_file = v if v && !v.empty? }
+      @config.delete(:monitoring_facter_file).tap {|v| @monitoring_facter_file = v if v && !v.empty? }
       @config.delete(:monitoring_subst).tap {|v| @monitoring_subst = Regexp.new(v) if v && !v.empty? }
 
       fail(ArgumentError, "No $TARGET_DIR provided") unless @target_dir

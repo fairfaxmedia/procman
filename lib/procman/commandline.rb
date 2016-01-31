@@ -56,18 +56,15 @@ module Procman
            description: 'Target dir for creating upstart scripts. (default: /etc/init)',
            default:     '/etc/init'
 
-    option :monitoring_file,
-           short:       '-m MONITORING_FILE',
-           long:        '--monitorout MONITORING_FILE',
-           description: 'Change the file for exporting to a Monitoring YAML (Structure Fact) file.  (default: /etc/facter/facts.d/procman)',
-           default:     ''
+    option :monitoring_facter_file,
+           long:        '--monitoring_out MONITORING_FILE',
+           description: 'Change the file for exporting to a Monitoring YAML (Structure Fact) file.  (default: /etc/facter/facts.d/procman)'
            # default:     '/etc/facter/facts.d/procman'   #TODO: Is this more-appropriate?
 
     option :monitoring_subst,
-           short:       '-S MONITORING_COMMAND_SUBST',
            long:        '--monitoring_subst MONITORING_COMMAND_SUBST',
            description: 'A regexp for removing parts of each command-line for the Monitoring YAML file.  (default: bundle exec)',
-           default:     'bundle exec'
+           default:     'bundle exec '
 
     # rubocop:enable Metrics/LineLength
 
