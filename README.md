@@ -38,9 +38,15 @@ The commandline structure.
 
     Options:
         -a, --app APP                    Name of the application. (default: directory name)
+            --debug                      Debug logging (default: false)
+            --monitoring_out MONITORING_FILE
+                                         Change the file for exporting to a Monitoring YAML (Structure Fact) file.
         -p, --port PORT                  Port to use as the base for this application. (default: 5000)
         -f, --file PROCFILE              Specify an alternate Procfile to load.
+        -m PROCFILE_MONITORING,          Specify an alternate Procfile monitoring config to load.
+            --monitoring_file
         -r, --root ROOT                  Specify an alternate application root. (default: Procfile directory)
+        -d, --dir TARGET_DIR             Target dir for creating upstart scripts. (default: /etc/init)
         -t, --template TEMPLATES         Specify an alternate template to use for creating export files. (default: upstart_rvm)
         -u, --user USER                  Specify the user the application should be run as. (default: www-data)
 
@@ -48,11 +54,57 @@ Example usage.
 
     sudo -i procman export --file /var/www/example/Procfile --app example --user www-data
 
+    sudo -i procman export --file /var/www/example/Procfile --app example --user www-data --monitoring_file /var/www/example/Procfile.mon
+
 On some systems you may need to start the service.
 
     sudo start example
 
 It is important to note that Procman writes files to /etc/init which requires root access. An interactive shell is required so the RVM environment is available.
+
+## Procfile Monitoring
+
+It's quite likely that you'll want to add monitoring/alerts for the processes that Foreman creates.
+To this end, if a `MONITORING_FILE` is provided, a YAML file will be written to that location with a
+list of processes that Foreman will start.
+
+e.g adding `--monitoring_out /etc/facter/facts.d/procman` with the file `files/Procfile`:
+
+    ---
+    delayed-job: bundle exec rake jobs:work
+    event-forwarder: /usr/local/bin/beanstalkd -b /var/cache/beanstalkd -u www-data
+    dir-watcher: ruby /usr/local/bin/dir-watcher
+
+... will produce in `/etc/facter/facts.d/procman`:
+
+    ---
+    procman-monitors:
+    - bundle exec rake jobs:work
+    - /usr/local/bin/beanstalkd -b /var/cache/beanstalkd -u www-data
+    - ruby /usr/local/bin/dir-watcher
+
+The assumption here is that you're using Puppet's Facter (and Structured Data files) to manage your
+monitoring.
+
+Since that may not be appropriate -- e.g. `bundle exec` replaces the bundle process with a Ruby/rake
+one, so you won't find `bundle` nor `exec` in the process tree -- then you can also provide a monitoring
+file that will be used to provide "substituted" processes for any matching keys.
+
+e.g. also adding `--monitoring_file files/Procfile.mon` with the following contents:
+
+    ---
+    delayed-job: rails rake jobs:work
+    event-forwarder: beanstalkd
+
+... will produce in `/etc/facter/facts.d/procman`:
+
+    ---
+    procman-monitors:
+    - rails rake jobs:work
+    - beanstalkd
+    - ruby /usr/local/bin/dir-watcher
+
+... which can be read by Puppet's Facter (et al) to produce valid process-monitoring config's.
 
 ## Development
 

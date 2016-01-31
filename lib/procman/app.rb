@@ -1,3 +1,5 @@
+require 'yaml'
+
 module Procman
   # Procman::App
   class App
@@ -10,9 +12,17 @@ module Procman
     ACTION  = 'export'
 
     def initialize(config)
+      log.debug "Procman options = #{config.inspect}"
+
       @config = config
-      log.debug "Procman options = #{@config.inspect}"
-     end
+      @target_dir = @procfile_monitoring = @monitoring_facter_file = nil
+
+      @config.delete(:target_dir).tap {|v| @target_dir = v if v && !v.empty? }
+      @config.delete(:procfile_monitoring).tap {|v| @procfile_monitoring = v if v && !v.empty? }
+      @config.delete(:monitoring_facter_file).tap {|v| @monitoring_facter_file = v if v && !v.empty? }
+
+      fail(ArgumentError, "No $TARGET_DIR provided") unless @target_dir
+    end
 
     def help(cli)
       puts 'Usage: procman [action] [options]'
@@ -43,6 +53,8 @@ module Procman
       log.debug "Foreman options = #{options.inspect}"
 
       execute(command options)
+
+      export_monitoring
     end
 
     private
@@ -50,7 +62,7 @@ module Procman
     def management
       case @config[:template]
       when 'upstart_rvm'
-        'upstart /etc/init'
+        "upstart #{@target_dir}"
       else
         fail InvalidTemplate
       end
@@ -73,6 +85,36 @@ module Procman
     def execute(command)
       log.debug "Running #{command.inspect}"
       system(command)
+    end
+
+    # Build a YAML file suitable for updating Icinga monitoring from
+    # E.g. Facter facts --> Icinga monitors
+    def export_monitoring
+      return unless @monitoring_facter_file
+
+      procs = YAML.load_file(@config[:procfile])
+      monitoring = read_procfile_monitoring
+
+      output = { "procman-monitors" => export_monitoring_procs(procs, monitoring) }
+
+      log.debug "Writing monitoring facter file to #{@monitoring_facter_file.inspect}"
+      open(@monitoring_facter_file, 'w') {|f| YAML.dump(output, f) }
+    end
+
+    def read_procfile_monitoring
+      return {} unless @procfile_monitoring
+
+      log.debug "Reading provided monitoring facter file from #{@procfile_monitoring}"
+      # We do this, in order to pre-validate the YAML-ness
+      YAML.load_file(@procfile_monitoring)
+    end
+
+    def export_monitoring_procs(procs, monitoring_replacements)
+      log.debug "Calculating monitoring facter file"
+
+      procs.each.with_object([]) do |(name, command), obj|
+        obj << (monitoring_replacements[name] || command)
+      end
     end
   end
 end
