@@ -15,12 +15,11 @@ module Procman
       log.debug "Procman options = #{config.inspect}"
 
       @config = config
-      @target_dir = @procfile_monitoring = @monitoring_facter_file = @monitoring_subst = nil
+      @target_dir = @procfile_monitoring = @monitoring_facter_file = nil
 
       @config.delete(:target_dir).tap {|v| @target_dir = v if v && !v.empty? }
       @config.delete(:procfile_monitoring).tap {|v| @procfile_monitoring = v if v && !v.empty? }
       @config.delete(:monitoring_facter_file).tap {|v| @monitoring_facter_file = v if v && !v.empty? }
-      @config.delete(:monitoring_subst).tap {|v| @monitoring_subst = Regexp.new(v) if v && !v.empty? }
 
       fail(ArgumentError, "No $TARGET_DIR provided") unless @target_dir
     end
@@ -103,7 +102,7 @@ module Procman
       procs = YAML.load_file(@config[:procfile])
       monitoring = read_procfile_monitoring
 
-      export_monitoring_subst(procs, monitoring, @monitoring_subst)
+      export_monitoring_subst(procs, monitoring)
     end
 
     def read_procfile_monitoring
@@ -116,16 +115,11 @@ module Procman
 
     # Some types of commands can't be monitored, as they spawn the "real" command (e.g. `bundle exec`)
     # We need to clean these out of our command list:
-    def export_monitoring_subst(procs, monitoring_replacements, monitoring_subst)
+    def export_monitoring_subst(procs, monitoring_replacements)
       log.debug "Calculating monitoring facter file"
 
       procs.each.with_object({}) do |(name, command), obj|
-        monitoring_item = {
-          # TODO: Does Facter let me use `-` in a name?
-          "procman-#{name}" => (monitoring_replacements[name] ||
-                                command.gsub(monitoring_subst, ''))
-        }
-        obj.merge!(monitoring_item)
+        obj.merge!("procman-#{name}" => monitoring_replacements[name]) if monitoring_replacements[name]
       end
     end
   end

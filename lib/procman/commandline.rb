@@ -66,11 +66,6 @@ module Procman
            description: 'Change the file for exporting to a Monitoring YAML (Structure Fact) file.  (default: /etc/facter/facts.d/procman)'
            # default:     '/etc/facter/facts.d/procman'   #TODO: Is this more-appropriate?
 
-    option :monitoring_subst,
-           long:        '--monitoring_subst MONITORING_COMMAND_SUBST',
-           description: 'A regexp for removing parts of each command-line for the Monitoring YAML file.  (default: bundle exec)',
-           default:     'bundle exec '
-
     # rubocop:enable Metrics/LineLength
 
     def run
