@@ -1,6 +1,8 @@
 module Procman
   # Procman::App
   class App
+    include Procman::Logger
+
     SHELL   = '/bin/bash --login -c'
     PROGRAM = 'foreman'
     ACTION  = 'export'
@@ -64,6 +66,7 @@ module Procman
     end
 
     def execute(command)
+      log.debug "Running #{command.inspect}"
       `#{command}`
     end
   end
