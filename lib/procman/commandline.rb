@@ -82,7 +82,7 @@ module Procman
     rescue ArgumentError,
            OptionParser::MissingArgument,
            OptionParser::InvalidOption => e
-      puts procman.help(cli)
+      puts procman.help(cli) if procman
       puts "ERROR: #{e.message}"
     end
 
