@@ -23,11 +23,6 @@ module Procman
            long:        '--file PROCFILE',
            description: 'Specify an alternate Procfile to load.'
 
-    option :procfile_monitoring,
-           short:       '-m PROCFILE_MONITORING',
-           long:        '--monitoring_file PROCFILE_MONITORING',
-           description: 'Specify an alternate Procfile monitoring config to load.'
-
     option :app,
            short:       '-a APP',
            long:        '--app APP',
@@ -60,6 +55,11 @@ module Procman
            long:        '--dir TARGET_DIR',
            description: 'Target dir for creating upstart scripts. (default: /etc/init)',
            default:     '/etc/init'
+
+    option :procfile_monitoring,
+           short:       '-m PROCFILE_MONITORING',
+           long:        '--monitoring_file PROCFILE_MONITORING',
+           description: 'Specify an alternate Procfile monitoring config to load.'
 
     option :monitoring_facter_file,
            long:        '--monitoring_out MONITORING_FILE',
