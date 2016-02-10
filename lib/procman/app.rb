@@ -95,7 +95,7 @@ module Procman
       procs = YAML.load_file(@config[:procfile])
       monitoring = read_procfile_monitoring
 
-      output = { "procman-monitors" => export_monitoring_procs(procs, monitoring) }
+      output = { "procman_monitors" => export_monitoring_procs(procs, monitoring) }
 
       log.debug "Writing monitoring facter file to #{@monitoring_facter_file.inspect}"
       open(@monitoring_facter_file, 'w') {|f| YAML.dump(output, f) }
