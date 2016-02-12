@@ -68,7 +68,7 @@ module Procman
 
     option :monitoring_facter_file_sep,
            long:        '--monitoring_separator MONITORING_PROCESS_SEP',
-           description: 'Instead of providing an array, provide a list of items in a string, separated by MONITORING_PROCESS_SEP',
+           description: 'Instead of providing an array, provide a list of items in a string, separated by MONITORING_PROCESS_SEP (default: "|")',
            default:     '|'
 
     # rubocop:enable Metrics/LineLength

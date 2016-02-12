@@ -41,6 +41,8 @@ The commandline structure.
             --debug                      Debug logging (default: false)
             --monitoring_out MONITORING_FILE
                                          Change the file for exporting to a Monitoring YAML (Structure Fact) file.
+            --monitoring_separator MONITORING_PROCESS_SEP
+                                         Instead of providing an array, provide a list of items in a string, separated by MONITORING_PROCESS_SEP (default: "|")
         -p, --port PORT                  Port to use as the base for this application. (default: 5000)
         -f, --file PROCFILE              Specify an alternate Procfile to load.
         -m PROCFILE_MONITORING,          Specify an alternate Procfile monitoring config to load.
@@ -68,23 +70,25 @@ It's quite likely that you'll want to add monitoring/alerts for the processes th
 To this end, if a `MONITORING_FILE` is provided, a YAML file will be written to that location with a
 list of processes that Foreman will start.
 
-e.g adding `--monitoring_out /etc/facter/facts.d/procman` with the file `files/Procfile`:
+e.g adding `--monitoring_out /etc/facter/facts.d/procman.yaml` with the file `files/Procfile`:
 
     ---
     delayed-job: bundle exec rake jobs:work
     event-forwarder: /usr/local/bin/beanstalkd -b /var/cache/beanstalkd -u www-data
     dir-watcher: ruby /usr/local/bin/dir-watcher
 
-... will produce in `/etc/facter/facts.d/procman`:
+... will produce in `/etc/facter/facts.d/procman.yaml`:
 
     ---
-    procman-monitors:
+    procman_monitors:
     - bundle exec rake jobs:work
     - /usr/local/bin/beanstalkd -b /var/cache/beanstalkd -u www-data
     - ruby /usr/local/bin/dir-watcher
 
 The assumption here is that you're using Puppet's Facter (and Structured Data files) to manage your
 monitoring.
+
+### Alternative Processes to Monitor
 
 Since that may not be appropriate -- e.g. `bundle exec` replaces the bundle process with a Ruby/rake
 one, so you won't find `bundle` nor `exec` in the process tree -- then you can also provide a monitoring
@@ -96,15 +100,35 @@ e.g. also adding `--monitoring_file files/Procfile.mon` with the following conte
     delayed-job: rails rake jobs:work
     event-forwarder: beanstalkd
 
-... will produce in `/etc/facter/facts.d/procman`:
+... will produce in `/etc/facter/facts.d/procman.yaml`:
 
     ---
-    procman-monitors:
+    procman_monitors:
     - rails rake jobs:work
     - beanstalkd
     - ruby /usr/local/bin/dir-watcher
 
 ... which can be read by Puppet's Facter (et al) to produce valid process-monitoring config's.
+
+#### Dealing with `stringify_facts`
+
+One additional tweak is certain Puppet systems that have `stringify_facts` enabled.
+
+This will cause the above `procman_monitors` to be converted to a fact like:
+
+    $procman_monitors = "[\"rails rake jobs:work\", \"beanstalkd\", \"ruby /usr/local/bin/dir-watcher\"]"
+
+... which is not easily parsable within Puppet.
+
+If the `--monitoring_separator` is set and non-blank (and it's `|`, by default) the external fact will look like:
+
+    ---
+    procman_monitors: rails rake jobs:work|beanstalkd|ruby /usr/local/bin/dir-watcher
+
+... which can be easily parsed with a `split($procman_monitors, "\\|")` function in your Puppet module.
+
+-----
+NB: `stringify_facts` is deprecated, and apparently due to be removed in Puppet 5.
 
 ## Development
 
