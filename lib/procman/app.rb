@@ -15,11 +15,12 @@ module Procman
       log.debug "Procman options = #{config.inspect}"
 
       @config = config
-      @target_dir = @procfile_monitoring = @monitoring_facter_file = nil
+      @target_dir = @procfile_monitoring = @monitoring_facter_file = @monitoring_facter_file_sep = nil
 
       @config.delete(:target_dir).tap {|v| @target_dir = v if v && !v.empty? }
       @config.delete(:procfile_monitoring).tap {|v| @procfile_monitoring = v if v && !v.empty? }
       @config.delete(:monitoring_facter_file).tap {|v| @monitoring_facter_file = v if v && !v.empty? }
+      @config.delete(:monitoring_facter_file_sep).tap {|v| @monitoring_facter_file_sep = v if v && !v.empty? }
 
       fail(ArgumentError, "No $TARGET_DIR provided") unless @target_dir
     end
@@ -95,7 +96,11 @@ module Procman
       procs = YAML.load_file(@config[:procfile])
       monitoring = read_procfile_monitoring
 
-      output = { "procman-monitors" => export_monitoring_procs(procs, monitoring) }
+      # It seems that some config's of Facter stringify the array (e.g. when stringify_facts is enabled)
+      # so we want to be able to provide a separated-list:
+      proc_list = export_monitoring_procs(procs, monitoring)
+      proc_list = proc_list.join(@monitoring_facter_file_sep) if @monitoring_facter_file_sep && !@monitoring_facter_file_sep.empty?
+      output = { "procman_monitors" => proc_list }
 
       log.debug "Writing monitoring facter file to #{@monitoring_facter_file.inspect}"
       open(@monitoring_facter_file, 'w') {|f| YAML.dump(output, f) }
